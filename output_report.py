@@ -71,11 +71,13 @@ def create_invalid_data_report():
     Table "tv_shows":
         * col "season_qty" -- qty of records <0 or >30
         * col "release_year" -- qty of records <1900 or > current year 
-        * col "date_added -- qty of records <'1997-01-01' or > current date
+        * col "date_added" -- qty of records <'1997-01-01' or > current date
+        * col "release_year"/"date_added" -- qty of records with date_added > release_year
     Table "movies"
         * col "movie_length_min" -- qty of records <0 or >500
         * col "release_year" -- qty of records <1900 or > current year 
-        * col "date_added -- qty of records <'1997-01-01' or > current date
+        * col "date_added" -- qty of records <'1997-01-01' or > current date
+        * col "release_year"/"date_added" -- qty of records with date_added > release_year
     Table cast_members:
         * col "gender" -- qty of records == "UNKNOWN"
         * col "gender" -- % of records == "UNKNOWN"
@@ -110,7 +112,7 @@ def create_invalid_data_report():
                 if re.search('percent',col): # add % symbol
                     f.write(f'{col} {value:.2f}%\n')
                 else:
-                    f.write(f'{col} {value:.2f}\n')
+                    f.write(f'{col} {value}\n')
         counter+=1
                 
 

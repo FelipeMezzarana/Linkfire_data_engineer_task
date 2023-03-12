@@ -1,0 +1,24 @@
+Table titles:
+
+invalid_title_type_qty 0
+
+Table movies:
+
+invalid_movie_length 0
+invalid_release_year 0
+invalid_date_added 0
+invalid_added_release_timespan 2
+
+Table tv_shows:
+
+invalid_season_qty 0
+invalid_release_year 0
+invalid_date_added 0
+invalid_added_release_timespan 10
+
+Table cast_members:
+
+gender_unknown_qty 12502
+gender_unknown_percent 22.06%
+gender_request_failed_qty 0
+gender_request_failed_percent 0.00%
