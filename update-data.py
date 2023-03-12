@@ -1,9 +1,14 @@
-from sqlalchemy import create_engine
-import os
-import re
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from time import perf_counter
+from sqlalchemy import create_engine
+import os
+import re
+import requests
+import queue
+import threading 
+
 
 def create_connection(uid:str = 'root',pwd:str = 'root',host:str = 'localhost',db:str = 'netflix_db'):
     """Returns a connection to a postgresql database
@@ -121,7 +126,6 @@ def update_table_tv_shows(netflix_df:pd.DataFrame, *kargs):
     """Treat and insert data into "tv_shows" table 
     """    
     
-    global df_tv_shows
     # Filtering DataFrame 
     df_tv_shows = netflix_df.loc[
         netflix_df.type == 'TV Show',
@@ -155,6 +159,122 @@ def update_table_tv_shows(netflix_df:pd.DataFrame, *kargs):
     print('Table tv_shows updated')
 
 
+def create_cast_members_df(netflix_df:pd.DataFrame):
+    """Returns a DataFrame with a record for each cast member 
+    """    
+
+    t_start = perf_counter() # Time counter 
+    # Filter cols
+    netflix_cast_members_df = netflix_df.loc[:,['show_id','cast']]
+    # Convert Cast names to list
+    netflix_cast_members_df['cast'] =  [str(name).split(',') for name in netflix_cast_members_df['cast']]
+    # Convert show_id to category for performance improvment (approx. 4 times faster)
+    netflix_cast_members_df['show_id'] = netflix_cast_members_df['show_id'].astype('category')
+    
+    # Pivot data: name list -> one name per row
+    show_id_list, cast_members_list = [[] for i in range(2)]
+    for show_id,i in zip(netflix_cast_members_df.show_id, range(len(netflix_cast_members_df.show_id))):
+        cast_members = netflix_cast_members_df[netflix_cast_members_df.show_id == show_id].cast[i]
+        for member in cast_members:
+            show_id_list.append(show_id)
+            cast_members_list.append(member)          
+    # Create df
+    cast_members_df = pd.DataFrame({'show_id':show_id_list,'cast_member':cast_members_list})
+    
+    # Treating names and converting 'nan' to NaN 
+    cast_members_df.cast_member = cast_members_df.cast_member.apply(
+        lambda x:
+        x.strip() 
+        if x != 'nan' 
+        else np.nan)
+    
+    t_end = perf_counter() # Time counter 
+    print(f'Cast Members DataFrame created in: {t_end-t_start:.2f}s')
+    
+    return cast_members_df
+
+
+def gender_feature(cast_members_list:list):
+    """Returns a DataFrame with the features gender and cast_member 
+    * Feature gender will be generated with https://www.aminer.cn/gender/api API
+    """   
+
+    name_list,gender_list = [[] for i in range(2)]
+    # One request per name
+    for name in cast_members_list:
+        if name == name: # check for NaN
+            request_name = name.replace(' ','+')
+            try:
+                gender_req = requests.get('https://innovaapi.aminer.cn/tools/v1/predict/gender?name='+  request_name +'&org=')  
+                gender = gender_req.json().get('data').get('Final').get('gender')
+                name_list.append(name)
+                gender_list.append(gender)
+            # Request may fail for several reasons
+            except:
+                name_list.append(name)
+                gender_list.append('request_failed')
+            
+    name_df = pd.DataFrame({'cast_member':name_list,'gender':gender_list})
+
+    return name_df
+
+
+def threading_gender_request(cast_members_df:pd.DataFrame,qty_threads:int = 100):
+    """Run the function gender_feature() with multi threading
+    * Runtime reduced from ~116h to 1:18h
+    """
+    
+    # Queue is needed to retrieve data returned with threading
+    my_queue = queue.Queue() 
+    threads_list = []
+    t_start = perf_counter()
+
+    names_list = cast_members_df.cast_member.unique().tolist()
+    # len size of each list (for each thread) based on desired thread quantity
+    list_len = int(len(names_list)/qty_threads)
+    # Splits the name list into several lists to pass each as an thread argument
+    list_of_names_list = [names_list[i:i+list_len] for i in range(0,len(names_list),list_len)]
+    
+    # Create and start threads
+    for name_list in list_of_names_list:
+        req_thread = threading.Thread(target=lambda q, arg1: q.put(gender_feature(arg1)), args=(my_queue,name_list))
+        req_thread.start()   
+        threads_list.append(req_thread)
+    # Wait for all threads to finish
+    for thread in threads_list:
+        thread.join() 
+
+    # Retrieve data
+    gender_df = pd.DataFrame()
+    while not my_queue.empty():
+        data = my_queue.get()
+        gender_df = pd.concat([gender_df,data]) 
+    gender_df.reset_index(drop = True, inplace = True)
+    
+    t_end = perf_counter() # Time counter 
+    print(f'Feature gender created in: {t_end-t_start:.2f}s')
+    
+    return gender_df
+
+
+def update_table_cast_members(cast_members_df:pd.DataFrame,gender_df:pd.DataFrame,*kargs):
+    """Merge gender with pivoted cast members table and insert data into "cast_members" table 
+    """  
+
+    # Adding gender feature to pivoted cast members df
+    cast_members_with_gender_df = pd.merge(cast_members_df,gender_df,how = 'left', on = 'cast_member')  
+
+    # Inserting data
+    conn = create_connection()
+    cast_members_with_gender_df.to_sql(
+        name = 'cast_members',
+        con = conn,
+        if_exists='append',
+        index=False,
+        *kargs)
+    conn.close()
+
+
 def main():
     """Create tables, treat and insert data
     """   
@@ -167,8 +287,14 @@ def main():
     update_table_title(new_netflix_titles)
     # Treat and insert data into "movies" table 
     update_table_movies(new_netflix_titles)
-    # Treat and insert data into "movies" table 
+    # Treat and insert data into "tv_shows" table 
     update_table_tv_shows(new_netflix_titles)
+    # Create cast_members_df, with a record for each cast member
+    cast_members_df = create_cast_members_df(new_netflix_titles)
+    # Create feature gender  
+    gender_df = threading_gender_request(cast_members_df,qty_threads = 50)
+    # Insert data into "cast_members" table
+    update_table_cast_members(cast_members_df,gender_df)
 
 
 if __name__ == '__main__':
