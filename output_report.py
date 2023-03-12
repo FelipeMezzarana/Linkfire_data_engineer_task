@@ -63,5 +63,57 @@ def create_null_values_report():
         counter+=1
                 
 
+def create_invalid_data_report():
+    """Creates a txt file with invalid_data report
+    The report contain:
+    Table "title":
+        * col "type" -- qty of records != "Movie" or != 'TV Show'
+    Table "tv_shows":
+        * col "season_qty" -- qty of records <0 or >30
+        * col "release_year" -- qty of records <1900 or > current year 
+        * col "date_added -- qty of records <'1997-01-01' or > current date
+    Table "movies"
+        * col "movie_length_min" -- qty of records <0 or >500
+        * col "release_year" -- qty of records <1900 or > current year 
+        * col "date_added -- qty of records <'1997-01-01' or > current date
+    Table cast_members:
+        * col "gender" -- qty of records == "UNKNOWN"
+        * col "gender" -- % of records == "UNKNOWN"
+        * col "gender" -- qty of records == "request_failed"
+        * col "gender" -- % of records == "request_failed"
+    """  
+    
+    today = datetime.today().strftime("%Y-%m-%d %H-%M")
+    file_name = 'reports/invalid_data_report_' + today + '.txt'
+    
+    queries_paths = [
+        'validate_output_queries/check_invalid_data_table_titles.sql',
+        'validate_output_queries/check_invalid_data_table_movies.sql',
+        'validate_output_queries/check_invalid_data_table_tv_shows.sql',
+        'validate_output_queries/check_invalid_data_table_cast_members.sql']
+    table_names = ['titles','movies','tv_shows','cast_members']
+    
+    # Loop through four queries and tables to write the full report
+    counter = 0
+    for query_path,table_name in zip(queries_paths,table_names):
+        # Read query into DataFrame
+        invalid_data_df = query_to_df(query_path)
+
+        with open(file_name, 'a', encoding='utf-8') as f:
+            if counter == 0: # Skip a line from the second iteration
+                f.write(f'Table {table_name}:\n\n')
+            else:
+                f.write(f'\nTable {table_name}:\n\n')
+            # write results
+            for col in invalid_data_df.columns: 
+                value = invalid_data_df[col][0]
+                if re.search('percent',col): # add % symbol
+                    f.write(f'{col} {value:.2f}%\n')
+                else:
+                    f.write(f'{col} {value:.2f}\n')
+        counter+=1
+                
+
 if __name__ == '__main__':
     create_null_values_report()
+    create_invalid_data_report()
