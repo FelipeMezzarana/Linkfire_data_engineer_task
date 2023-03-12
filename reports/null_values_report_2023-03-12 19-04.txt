@@ -1,0 +1,24 @@
+Table titles:
+
+director_null_qty 2389
+director_null_percent 30.68%
+country_null_qty 507
+country_null_percent 6.51%
+rating_null_qty 7
+rating_null_percent 0.09%
+
+Table movies:
+
+None columns with null values
+
+Table tv_shows:
+
+date_added_null_qty 10
+date_added_null_percent 0.41%
+
+Table cast_members:
+
+cast_member_null_qty 718
+cast_member_null_percent 9.22%
+gender_null_qty 718
+gender_null_percent 9.22%
