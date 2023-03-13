@@ -1,0 +1,16 @@
+01 - What is the most common first name among actors and actresses?
+Michael - 513 Records
+
+02 - Which Movie had the longest timespan from release to appearing on Netflix?
+Prelude to War - release_year 1942 date_added 2017-03-31 00:00:00
+The Battle of Midway - release_year 1942 date_added 2017-03-31 00:00:00
+
+03 - Which Month of the year had the most new releases historically?
+Month 12 - 833 Titles added
+
+04 - Which year had the largest increase year on year (percentage wise) for TV Shows?
+2016 - 81.86% Increase percent.
+
+05 - List the actresses that have appeared in a movie with Woody Harrelson more than once?
+Emilia Clarke - 2 Movies with Woody Harrelson
+Phoebe Waller-Bridge - 2 Movies with Woody Harrelson
