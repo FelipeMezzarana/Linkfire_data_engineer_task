@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import math as mt
 from datetime import datetime
 from time import perf_counter
 from sqlalchemy import create_engine
@@ -21,11 +22,11 @@ def create_connection(uid:str = 'root',pwd:str = 'root',host:str = 'localhost',d
     return conn
 
 
-def execute_ddl_statements(sql_files_path:str = 'DDL_queries',*kargs):
+def execute_ddl_statements(sql_files_path:str = 'DDL_queries',**kwargs):
     """Run all SQL scripts in the folder "sql_files_path"
     """
 
-    conn = create_connection(*kargs)
+    conn = create_connection(**kwargs)
     # checks for .sql files
     folder_files = sorted(os.listdir(sql_files_path)) # Sorting ensures alphabetical order of execution
     for file in folder_files:
@@ -39,7 +40,7 @@ def execute_ddl_statements(sql_files_path:str = 'DDL_queries',*kargs):
     conn.close()  
 
 
-def load_input(check_duplicates:bool = True,file_path:str = 'input_data/netflix_titles.csv'):
+def load_input(check_duplicates:bool = True,file_path:str = 'input_data/netflix_titles.csv',**kwargs):
     """Read a csv file with infos about netflix titles into a DataFrame.  
     * If check_duplicates == True drop any title that already has a record in the database
     """
@@ -48,7 +49,7 @@ def load_input(check_duplicates:bool = True,file_path:str = 'input_data/netflix_
     
     if check_duplicates == True:
         # finds a list of titles that already have registration
-        conn = create_connection()
+        conn = create_connection(**kwargs)
         check_records_query = (
             'SELECT '
             '   show_id '
@@ -66,7 +67,7 @@ def load_input(check_duplicates:bool = True,file_path:str = 'input_data/netflix_
         return netflix_titles_df
     
 
-def update_table_title(netflix_df:pd.DataFrame, *kargs):
+def update_table_title(netflix_df:pd.DataFrame, **kwargs):
     """Insert data into "titles" table 
     """    
     
@@ -75,17 +76,18 @@ def update_table_title(netflix_df:pd.DataFrame, *kargs):
                                    'director','country','rating',
                                    'listed_in','description']]    
     # Inserting data
-    conn = create_connection()
+    conn = create_connection(**kwargs)
     df_titles.to_sql(
         name = 'titles',
         con = conn,
         if_exists='append',
-        index=False, *kargs)
+        index=False,
+        method='multi')
     conn.close()
     print('Table titles updated')
 
 
-def update_table_movies(netflix_df:pd.DataFrame, *kargs):
+def update_table_movies(netflix_df:pd.DataFrame, **kwargs):
     """Treat and insert data into "movies" table 
     """    
     
@@ -110,19 +112,20 @@ def update_table_movies(netflix_df:pd.DataFrame, *kargs):
     df_movies.rename(columns = {'duration':'movie_length_min'},inplace = True)
 
     # Inserting data
-    conn = create_connection()
+    conn = create_connection(**kwargs)
     df_movies.to_sql(
         name = 'movies',
         con = conn,
         if_exists='append',
         index=False,
-        *kargs)
+        method='multi'
+        )
     
     conn.close()
     print('Table movies updated')
 
 
-def update_table_tv_shows(netflix_df:pd.DataFrame, *kargs):
+def update_table_tv_shows(netflix_df:pd.DataFrame, **kwargs):
     """Treat and insert data into "tv_shows" table 
     """    
     
@@ -147,13 +150,14 @@ def update_table_tv_shows(netflix_df:pd.DataFrame, *kargs):
     df_tv_shows.rename(columns = {'duration':'season_qty'},inplace = True)
 
     # Inserting data
-    conn = create_connection()
+    conn = create_connection(**kwargs)
     df_tv_shows.to_sql(
         name = 'tv_shows',
         con = conn,
         if_exists='append',
         index=False,
-        *kargs)
+        method='multi'
+        )
     
     conn.close()
     print('Table tv_shows updated')
@@ -231,7 +235,7 @@ def threading_gender_request(cast_members_df:pd.DataFrame,qty_threads:int = 100)
 
     names_list = cast_members_df.cast_member.unique().tolist()
     # len size of each list (for each thread) based on desired thread quantity
-    list_len = int(len(names_list)/qty_threads)
+    list_len = mt.ceil(len(names_list)/qty_threads) # Round up
     # Splits the name list into several lists to pass each as an thread argument
     list_of_names_list = [names_list[i:i+list_len] for i in range(0,len(names_list),list_len)]
     
@@ -257,7 +261,7 @@ def threading_gender_request(cast_members_df:pd.DataFrame,qty_threads:int = 100)
     return gender_df
 
 
-def update_table_cast_members(cast_members_df:pd.DataFrame,gender_df:pd.DataFrame,*kargs):
+def update_table_cast_members(cast_members_df:pd.DataFrame,gender_df:pd.DataFrame,**kwargs):
     """Merge gender with pivoted cast members table and insert data into "cast_members" table 
     """  
 
@@ -265,17 +269,18 @@ def update_table_cast_members(cast_members_df:pd.DataFrame,gender_df:pd.DataFram
     cast_members_with_gender_df = pd.merge(cast_members_df,gender_df,how = 'left', on = 'cast_member')  
 
     # Inserting data
-    conn = create_connection()
+    conn = create_connection(**kwargs)
     cast_members_with_gender_df.to_sql(
         name = 'cast_members',
         con = conn,
         if_exists='append',
         index=False,
-        *kargs)
+        method='multi'
+        )
     conn.close()
 
 
-def main():
+def etl_pipeline():
     """Create tables, treat and insert data
     """   
 
@@ -292,13 +297,13 @@ def main():
     # Create cast_members_df, with a record for each cast member
     cast_members_df = create_cast_members_df(new_netflix_titles)
     # Create feature gender  
-    gender_df = threading_gender_request(cast_members_df,qty_threads = 50)
+    gender_df = threading_gender_request(cast_members_df,qty_threads = 100)
     # Insert data into "cast_members" table
     update_table_cast_members(cast_members_df,gender_df)
 
 
 if __name__ == '__main__':
-    main()
+    etl_pipeline()
 
     
 
