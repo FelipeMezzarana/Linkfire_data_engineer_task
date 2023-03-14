@@ -27,10 +27,10 @@ def create_null_values_report():
     file_name = 'reports/null_values_report_' + today + '.txt'
     
     queries_paths = [
-        'validate_output_queries/check_null_table_titles.sql',
-        'validate_output_queries/check_null_table_movies.sql',
-        'validate_output_queries/check_null_table_tv_shows.sql',
-        'validate_output_queries/check_null_table_cast_members.sql']
+        'sql_queries/validate_output_queries/check_null_table_titles.sql',
+        'sql_queries/validate_output_queries/check_null_table_movies.sql',
+        'sql_queries/validate_output_queries/check_null_table_tv_shows.sql',
+        'sql_queries/validate_output_queries/check_null_table_cast_members.sql']
     table_names = ['titles','movies','tv_shows','cast_members']
  
     # Loop through four queries and tables to write the full report
@@ -89,10 +89,10 @@ def create_invalid_data_report():
     file_name = 'reports/invalid_data_report_' + today + '.txt'
     
     queries_paths = [
-        'validate_output_queries/check_invalid_data_table_titles.sql',
-        'validate_output_queries/check_invalid_data_table_movies.sql',
-        'validate_output_queries/check_invalid_data_table_tv_shows.sql',
-        'validate_output_queries/check_invalid_data_table_cast_members.sql']
+        'sql_queries/validate_output_queries/check_invalid_data_table_titles.sql',
+        'sql_queries/validate_output_queries/check_invalid_data_table_movies.sql',
+        'sql_queries/validate_output_queries/check_invalid_data_table_tv_shows.sql',
+        'sql_queries/validate_output_queries/check_invalid_data_table_cast_members.sql']
     table_names = ['titles','movies','tv_shows','cast_members']
     
     # Loop through four queries and tables to write the full report
@@ -124,7 +124,7 @@ def create_analytical_report():
     file_name = 'reports/analytical_report_' + today + '.txt'
     
     # 1º Query
-    query_1_path = 'analysis_queries/01_most_common_first_name.sql'
+    query_1_path = 'sql_queries/analysis_queries/01_most_common_first_name.sql'
     most_common_first_name_df = query_to_df(query_1_path)
     # Write results
     with open(file_name, 'w', encoding='utf-8') as f:
@@ -132,7 +132,7 @@ def create_analytical_report():
         f.write(f'{most_common_first_name_df.first_name[0]} - {most_common_first_name_df.first_name_qty[0]} Records')
         
     # 2º Query   
-    query_2_path = 'analysis_queries/02_movie_with_longest_timespan.sql'
+    query_2_path = 'sql_queries/analysis_queries/02_movie_with_longest_timespan.sql'
     movie_with_longest_timespan = query_to_df(query_2_path)
     # Checking duplicate values in first position (draw)
     draw_qty = movie_with_longest_timespan.loc[
@@ -148,7 +148,7 @@ def create_analytical_report():
                     f'date_added {movie_with_longest_timespan.date_added[i]}\n')
     
     # 3º Query
-    query_3_path = 'analysis_queries/03_month_most_new_releases.sql'
+    query_3_path = 'sql_queries/analysis_queries/03_month_most_new_releases.sql'
     month_most_new_releases = query_to_df(query_3_path)
     # Write results
     with open(file_name, 'a', encoding='utf-8') as f:
@@ -157,7 +157,7 @@ def create_analytical_report():
                 f'{month_most_new_releases.qty_titles_added[0]} Titles added')
     
     # 4º Query
-    query_4_path = 'analysis_queries/04_tv_shows_largest_increase_year_on_year.sql'
+    query_4_path = 'sql_queries/analysis_queries/04_tv_shows_largest_increase_year_on_year.sql'
     tv_shows_largest_increase = query_to_df(query_4_path)
     # Write results
     with open(file_name, 'a', encoding='utf-8') as f:
@@ -166,7 +166,7 @@ def create_analytical_report():
                 f'{tv_shows_largest_increase.increase_percent[0]:.2f}% Increase percent.')
 
     # 5º Query
-    query_5_path = 'analysis_queries/05_actresses_more_than_one_movie_with_wood.sql'
+    query_5_path = 'sql_queries/analysis_queries/05_actresses_more_than_one_movie_with_wood.sql'
     actresses_with_woody = query_to_df(query_5_path)
     # Write results
     with open(file_name, 'a', encoding='utf-8') as f:
@@ -186,6 +186,4 @@ def reports_pipeline():
 
 
 if __name__ == '__main__':
-    #create_null_values_report()
-    #create_invalid_data_report()
-    create_analytical_report()
+    reports_pipeline()

@@ -22,7 +22,7 @@ def create_connection(uid:str = 'root',pwd:str = 'root',host:str = 'localhost',d
     return conn
 
 
-def execute_ddl_statements(sql_files_path:str = 'DDL_queries',**kwargs):
+def execute_ddl_statements(sql_files_path:str = 'sql_queries/DDL_queries',**kwargs):
     """Run all SQL scripts in the folder "sql_files_path"
     """
 
