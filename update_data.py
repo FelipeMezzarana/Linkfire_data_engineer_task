@@ -67,8 +67,9 @@ def load_input(check_duplicates:bool = True,file_path:str = 'input_data/netflix_
         return netflix_titles_df
     
 
-def update_table_title(netflix_df:pd.DataFrame, **kwargs):
-    """Insert data into "titles" table 
+def update_table_title(netflix_df:pd.DataFrame,update_db:bool = True, **kwargs):
+    """Treat Insert data into "titles" table 
+    * if update_db == False return a df with treated data and does not update database (tests purpose)
     """    
     
     # Filtering DataFrame 
@@ -76,19 +77,23 @@ def update_table_title(netflix_df:pd.DataFrame, **kwargs):
                                    'director','country','rating',
                                    'listed_in','description']]    
     # Inserting data
-    conn = create_connection(**kwargs)
-    df_titles.to_sql(
-        name = 'titles',
-        con = conn,
-        if_exists='append',
-        index=False,
-        method='multi')
-    conn.close()
-    print('Table titles updated')
+    if update_db == True:
+        conn = create_connection(**kwargs)
+        df_titles.to_sql(
+            name = 'titles',
+            con = conn,
+            if_exists='append',
+            index=False,
+            method='multi')
+        conn.close()
+        print('Table titles updated')
+    else:
+        return df_titles
 
 
-def update_table_movies(netflix_df:pd.DataFrame, **kwargs):
+def update_table_movies(netflix_df:pd.DataFrame,update_db:bool = True, **kwargs):
     """Treat and insert data into "movies" table 
+     * if update_db == False return a df with treated data and does not update database (tests purpose)
     """    
     
     # Filtering DataFrame 
@@ -112,21 +117,24 @@ def update_table_movies(netflix_df:pd.DataFrame, **kwargs):
     df_movies.rename(columns = {'duration':'movie_length_min'},inplace = True)
 
     # Inserting data
-    conn = create_connection(**kwargs)
-    df_movies.to_sql(
-        name = 'movies',
-        con = conn,
-        if_exists='append',
-        index=False,
-        method='multi'
-        )
-    
-    conn.close()
-    print('Table movies updated')
+    if update_db == True:
+        conn = create_connection(**kwargs)
+        df_movies.to_sql(
+            name = 'movies',
+            con = conn,
+            if_exists='append',
+            index=False,
+            method='multi'
+            )
+        conn.close()
+        print('Table movies updated')
+    else:
+        return df_movies
 
 
-def update_table_tv_shows(netflix_df:pd.DataFrame, **kwargs):
+def update_table_tv_shows(netflix_df:pd.DataFrame,update_db:bool = True, **kwargs):
     """Treat and insert data into "tv_shows" table 
+     * if update_db == False return a df with treated data and does not update database (tests purpose)
     """    
     
     # Filtering DataFrame 
@@ -150,17 +158,20 @@ def update_table_tv_shows(netflix_df:pd.DataFrame, **kwargs):
     df_tv_shows.rename(columns = {'duration':'season_qty'},inplace = True)
 
     # Inserting data
-    conn = create_connection(**kwargs)
-    df_tv_shows.to_sql(
-        name = 'tv_shows',
-        con = conn,
-        if_exists='append',
-        index=False,
-        method='multi'
-        )
-    
-    conn.close()
-    print('Table tv_shows updated')
+    if update_db == True:
+        conn = create_connection(**kwargs)
+        df_tv_shows.to_sql(
+            name = 'tv_shows',
+            con = conn,
+            if_exists='append',
+            index=False,
+            method='multi'
+            )
+        
+        conn.close()
+        print('Table tv_shows updated')
+    else:
+        return df_tv_shows
 
 
 def create_cast_members_df(netflix_df:pd.DataFrame):
