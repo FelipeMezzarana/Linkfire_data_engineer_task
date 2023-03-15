@@ -13,8 +13,8 @@
 
 I choose to create a Postgres database in Docker. This way (considering the small dataset volume) it's possible to map the db volume to a folder inside this repository, and anyone with docker installed can clone it and access the database.
 
- The created [docker-compose.yaml file](database/docker-compose.yaml) contain instructions for:
-+ Set up the Postgres database "netflix_db" with volume mapped to "Linkfire_data_engineer_task/database/volume"
+ The [docker-compose.yaml](database/docker-compose.yaml) file contain instructions for:
++ Set up the Postgres database "netflix_db" with volume mapped to [here](database/volume)
 + Set up PgAdmin local server, to easily query "netflix_db"
 
 After running "docker-compose up" you will be able to access PgAdmin at http://localhost:8080/ with credentials:
@@ -24,7 +24,7 @@ After running "docker-compose up" you will be able to access PgAdmin at http://l
 + Postgres username: root
 + Postgres password: root
 
-[DDL SQL Scripts that will be used in the creation of the data model](sql_queries/DDL_queries)
+[DDL SQL Scripts](sql_queries/DDL_queries) that will be used in the creation of the data model
 
 ## Step 2 : Create a python programme that will run the above SQL scripts and ETL the data from the csv file into the database.
 
@@ -70,7 +70,7 @@ The multi threading process was defined in the function threading_gender_request
 
 ### SQL Scripts
 
-First, [I created eight SQL Scripts](sql_queries/validate_output_queries), four to check for null values and four to check for invalid data (one for each table)
+First, I created [eight SQL Scripts](sql_queries/validate_output_queries), four to check for null values and four to check for invalid data (one for each table)
 
 **Scripts to check for null values will:**
 + Check NULL values quantity for each columns in each table
@@ -126,8 +126,8 @@ Generated reports will be saved [here](reports) with name **"analytical_report_"
 The main task of this stage was the creation of the unit tests. 
 
 I decided to create two tests:
-+ [Input tests (test_netflix_pipeline_input.py)](test_netflix_pipeline_input.py): guarantee the quality of the data in the extraction phase
-+ [Output tests (test_netflix_pipeline_output.py)](test_netflix_pipeline_output.py): guarantee that we will have the expected behavior of the functions responsible for transforming data and updating the db, with the goal of maintaining the data quality of data inserted in the db and helping in the development of possible updates in the code.
++ Input tests [(test_netflix_pipeline_input.py)](test_netflix_pipeline_input.py): guarantee the quality of the data in the extraction phase
++ Output tests [(test_netflix_pipeline_output.py)](test_netflix_pipeline_output.py): guarantee that we will have the expected behavior of the functions responsible for transforming data and updating the db, with the goal of maintaining the data quality of data inserted in the db and helping in the development of possible updates in the code.
 
 ### Input Tests
 
