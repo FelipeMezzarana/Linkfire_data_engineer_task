@@ -129,6 +129,8 @@ I decided to create two tests:
 + Input tests [(test_netflix_pipeline_input.py)](test_netflix_pipeline_input.py): guarantee the quality of the data in the extraction phase
 + Output tests [(test_netflix_pipeline_output.py)](test_netflix_pipeline_output.py): guarantee that we will have the expected behavior of the functions responsible for transforming data and updating the db, with the goal of maintaining the data quality of data inserted in the db and helping in the development of possible updates in the code.
 
+**Every time we run these tests, a log file will be generated [here](log).**
+
 ### Input Tests
 
 The following tests were designed:
