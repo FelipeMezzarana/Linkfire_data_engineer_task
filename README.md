@@ -13,7 +13,7 @@
 
 I choose to create a Postgres database in Docker. This way (considering the small dataset volume) it's possible to map the db volume to a folder inside this repository, and anyone with docker installed can clone it and access the database.
 
- [The created docker-compose.yaml file](database/docker-compose.yaml) contain instructions for:
+ The created [docker-compose.yaml file](database/docker-compose.yaml) contain instructions for:
 + Set up the Postgres database "netflix_db" with volume mapped to "Linkfire_data_engineer_task/database/volume"
 + Set up PgAdmin local server, to easily query "netflix_db"
 
@@ -29,7 +29,7 @@ After running "docker-compose up" you will be able to access PgAdmin at http://l
 ## Step 2 : Create a python programme that will run the above SQL scripts and ETL the data from the csv file into the database.
 
 
-The Python Script [update-data.py](update-data.py) will run a pipeline to create all tables of the data model and ETL the csv data into the database.
+The Python Script [update_data.py](update_data.py) will run a pipeline to create all tables of the data model and ETL the csv data into the database.
 
 A few details of the main functions in the pipeline:
 
@@ -56,7 +56,7 @@ A few details of the main functions in the pipeline:
 
 ## **Step 3** : Enhance the data by adding the cast members' gender (Male / Female). [https://www.aminer.cn/gender/api](https://www.aminer.cn/gender/api) or any other source you want to use.
 
-To complete this step, functions were created inside [update-data.py](update-data.py) as described below.
+To complete this step, functions were created inside [update_data.py](update_data.py) as described below.
 
 The first part of this step consisted of preparing a DataFrame with one record for each cast member, making requests easier and preparing the base of the table "tv_shows". This was done with the function create_cast_members_df()
 
@@ -113,7 +113,7 @@ To generate reports from the queries described above, I created the Python progr
 + Which year had the largest increase year on year (percentage wise) for TV Shows?
 + List the actresses that have appeared in a movie with Woody Harrelson more than once.
 
-**The SQL Scripts that answer each of those questions can be found at "Linkfire_data_engineer_task/sql_queries/analysis_queries/"**
+**Five SQL scripts to answer those questions can be found [here](sql_queries/analysis_queries)**
 
 Furthermore, in the file [output_report.py](output_report.py) the function "create_analytical_report()" was added.
 
@@ -126,8 +126,8 @@ Generated reports will be saved [here](reports) with name **"analytical_report_"
 The main task of this stage was the creation of the unit tests. 
 
 I decided to create two tests:
-+ [Input tests](test_netflix_pipeline_input.py): guarantee the quality of the data in the extraction phase
-+ [Output tests](test_netflix_pipeline_output.py): guarantee that we will have the expected behavior of the functions responsible for transforming data and updating the db, with the goal of maintaining the data quality of data inserted in the db and helping in the development of possible updates in the code.
++ [Input tests (test_netflix_pipeline_input.py)](test_netflix_pipeline_input.py): guarantee the quality of the data in the extraction phase
++ [Output tests (test_netflix_pipeline_output.py)](test_netflix_pipeline_output.py): guarantee that we will have the expected behavior of the functions responsible for transforming data and updating the db, with the goal of maintaining the data quality of data inserted in the db and helping in the development of possible updates in the code.
 
 ### Input Tests
 
