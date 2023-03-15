@@ -60,7 +60,7 @@ def load_input(check_duplicates:bool = True,file_path:str = 'input_data/netflix_
         titles_with_record = titles_with_record_df.show_id.tolist()
         # Filters titles with records, avoiding inserting duplicate data in the db
         netflix_filtered_titles_df = netflix_titles_df[~netflix_titles_df.show_id.isin(titles_with_record)]
-        print('Input loaded (checking for duplicate records)')
+        print(f'Input loaded (checking for duplicate records) - new records:{len(netflix_filtered_titles_df)}')
         return netflix_filtered_titles_df
     else:
         print('Input loaded (WITHOUT checking for duplicate records)')
@@ -167,7 +167,6 @@ def update_table_tv_shows(netflix_df:pd.DataFrame,update_db:bool = True, **kwarg
             index=False,
             method='multi'
             )
-        
         conn.close()
         print('Table tv_shows updated')
     else:
@@ -299,18 +298,21 @@ def etl_pipeline():
     execute_ddl_statements()
     # Load raw df (without duplicates)
     new_netflix_titles = load_input()
-    # Insert data into "titles" table
-    update_table_title(new_netflix_titles)
-    # Treat and insert data into "movies" table 
-    update_table_movies(new_netflix_titles)
-    # Treat and insert data into "tv_shows" table 
-    update_table_tv_shows(new_netflix_titles)
-    # Create cast_members_df, with a record for each cast member
-    cast_members_df = create_cast_members_df(new_netflix_titles)
-    # Create feature gender  
-    gender_df = threading_gender_request(cast_members_df,qty_threads = 100)
-    # Insert data into "cast_members" table
-    update_table_cast_members(cast_members_df,gender_df)
+    if len(new_netflix_titles) != 0:
+        # Insert data into "titles" table
+        update_table_title(new_netflix_titles)
+        # Treat and insert data into "movies" table 
+        update_table_movies(new_netflix_titles)
+        # Treat and insert data into "tv_shows" table 
+        update_table_tv_shows(new_netflix_titles)
+        # Create cast_members_df, with a record for each cast member
+        cast_members_df = create_cast_members_df(new_netflix_titles)
+        # Create feature gender  
+        gender_df = threading_gender_request(cast_members_df,qty_threads = 100)
+        # Insert data into "cast_members" table
+        update_table_cast_members(cast_members_df,gender_df)
+    else:
+        print('0 new records, tables have NOT been updated')
 
 
 if __name__ == '__main__':
