@@ -13,7 +13,7 @@
 
 I choose to create a Postgres database in Docker. This way (considering the small dataset volume) it's possible to map the db volume to a folder inside this repository, and anyone with docker installed can clone it and access the database.
 
-Inside "Linkfire_data_engineer_task/database" folder you will find the docker-compose.yaml file, containing instructions for:
+ [The created docker-compose.yaml file](database/docker-compose.yaml) contain instructions for:
 + Set up the Postgres database "netflix_db" with volume mapped to "Linkfire_data_engineer_task/database/volume"
 + Set up PgAdmin local server, to easily query "netflix_db"
 
@@ -24,12 +24,12 @@ After running "docker-compose up" you will be able to access PgAdmin at http://l
 + Postgres username: root
 + Postgres password: root
 
-***The SQL Scripts that will be used in the creation of the data model can be found at "Linkfire_data_engineer_task/sql_queries/DDL_queries/"***
+[DDL SQL Scripts that will be used in the creation of the data model](sql_queries/DDL_queries)
 
 ## Step 2 : Create a python programme that will run the above SQL scripts and ETL the data from the csv file into the database.
 
 
-The Python Script "update-data.py" will run a pipeline to create all tables of the data model and ETL the csv data into the database.
+The Python Script [update-data.py](update-data.py) will run a pipeline to create all tables of the data model and ETL the csv data into the database.
 
 A few details of the main functions in the pipeline:
 
@@ -56,7 +56,9 @@ A few details of the main functions in the pipeline:
 
 ## **Step 3** : Enhance the data by adding the cast members' gender (Male / Female). [https://www.aminer.cn/gender/api](https://www.aminer.cn/gender/api) or any other source you want to use.
 
-The first part of this step consisted of preparing a DataFrame with one record for each cast member, making requests easier and preparing the base of the table "tv_shows". This was done with the function create_cast_members_df() inside update-data.py
+To complete this step, functions were created inside [update-data.py](update-data.py) as described below.
+
+The first part of this step consisted of preparing a DataFrame with one record for each cast member, making requests easier and preparing the base of the table "tv_shows". This was done with the function create_cast_members_df()
 
 The second part of the task consisted of generating the gender feature. First I created a simple function named  gender_feature() that performs the request and organizes the results in a DataFrame. But after some tests I quickly realized that it would be unfeasible to go with just this solution. It took 741s to run 100 requests, considering there are 56,673 names to search, **it would take approximately 116 hours to complete the process.**
 
@@ -68,7 +70,7 @@ The multi threading process was defined in the function threading_gender_request
 
 ### SQL Scripts
 
-Inside the folder "Linkfire_data_engineer_task/sql_queries/validate_output_queries" you will find 8 SQL Scripts, 4 to check for null values and 4 to check for invalid data (1 for each table)
+First, [I created eight SQL Scripts](sql_queries/validate_output_queries), four to check for null values and four to check for invalid data (one for each table)
 
 **Scripts to check for null values will:**
 + Check NULL values quantity for each columns in each table
@@ -99,7 +101,7 @@ Inside the folder "Linkfire_data_engineer_task/sql_queries/validate_output_queri
 
 ### Report
 
-To generate reports from the queries described above, I created the Python program "output_report.py". This program basically run all the queries and with the results generates two formatted txt files in the folder "Linkfire_data_engineer_task/reports":
+To generate reports from the queries described above, I created the Python program [output_report.py](output_report.py). This program basically run all the queries and with the results generates two formatted txt files [here](reports):
 + null_values_report
 + invalid_data_report
 
@@ -113,19 +115,19 @@ To generate reports from the queries described above, I created the Python progr
 
 **The SQL Scripts that answer each of those questions can be found at "Linkfire_data_engineer_task/sql_queries/analysis_queries/"**
 
-Furthermore, in the file output_report.py the function "create_analytical_report()" was added.
+Furthermore, in the file [output_report.py](output_report.py) the function "create_analytical_report()" was added.
 
 This function will be responsible for executing the queries that answer the questions above and organizing the results in a report in .txt format
 
-The report can be found at "Linkfire_data_engineer_task/reports/" with the name **"analytical_report_" + generation date + ".txt"**
+Generated reports will be saved [here](reports) with name **"analytical_report_" + generation date + ".txt"**
 
 ## **Step 6** : Combine all the previous steps into a solid Python programme that has unit testing. Feel free to create a main file that can be ran via a Python command line.
 
 The main task of this stage was the creation of the unit tests. 
 
 I decided to create two tests:
-+ Input tests (test_netflix_pipeline_input.py): guarantee the quality of the data in the extraction phase
-+ Output tests (test_netflix_pipeline_output.py): guarantee that we will have the expected behavior of the functions responsible for transforming data and updating the db, with the goal of maintaining the data quality of data inserted in the db and helping in the development of possible updates in the code.
++ [Input tests](test_netflix_pipeline_input.py): guarantee the quality of the data in the extraction phase
++ [Output tests](test_netflix_pipeline_output.py): guarantee that we will have the expected behavior of the functions responsible for transforming data and updating the db, with the goal of maintaining the data quality of data inserted in the db and helping in the development of possible updates in the code.
 
 ### Input Tests
 
@@ -170,7 +172,7 @@ The tests check the following points:
 
 ### main.py
 
-Finally, I created the main.py to combine all the previous steps.
+Finally, I created the [main Python program](main.py) to combine all the previous steps.
 
 The program will run the steps in this order:
 + Run input testes
