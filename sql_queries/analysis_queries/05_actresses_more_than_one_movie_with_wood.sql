@@ -5,12 +5,12 @@ FROM
 	cast_members 
 WHERE 
 	show_id IN (SELECT 
-					show_id 
-				FROM 
-					cast_members
-				WHERE
-					cast_member = 'Woody Harrelson'
-			   )
+			show_id 
+		     FROM 
+			cast_members
+		     WHERE
+			cast_member = 'Woody Harrelson'
+		    )
 AND
 	gender = 'female'
 GROUP BY 
